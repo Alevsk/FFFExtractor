@@ -55,30 +55,31 @@ class FFFExtractor:
 
 		input = input.replace("for (;;);", "", 2)
 		cursor = {'code':'','page_number':''}
+		position = 0
+		pageNumberPosition = 0
 
 		try:
 			json_object = json.loads(input)
 		except ValueError, e:
 			position = input.find(CONSTANTS.CURSOR)
-			pageNumberPosition = 0
 			cursorStart = position + 9
 
-			for i in range(cursorStart,len(input)):
-				if input[i] == '"':
-					pageNumberPosition = i + 16
-					for i in range(pageNumberPosition,len(input)):
-						if input[i] == ',':
-							break
-						else:
-							cursor['page_number'] += input[i]
-					break
-				else:
-					cursor['code'] += input[i]
-
 		else:
-			pagination = json_object['jsmods']['require'][7][3]
-			cursor['code'] = pagination[0]['cursor']
-			cursor['page_number'] = str(pagination[0]['page_number'])
+			position = input.find("\"cursor\"")
+			cursorStart = position + 10
+			
+		for i in range(cursorStart,len(input)):
+			if input[i] == '"':
+				pageNumberPosition = i + 16
+				for i in range(pageNumberPosition,len(input)):
+					if input[i] == ',':
+						break
+					else:
+						cursor['page_number'] += input[i]
+				break
+			else:
+				cursor['code'] += input[i]
+
 
 		print cursor
 		return cursor
@@ -88,7 +89,7 @@ class FFFExtractor:
 
 	def getFans(self):
 		data = None
-		for i in range(1,6):
+		for i in range(1,9):
 			response = self.makeRequest(data)
 			# THREADS HERE
 			# data contains the necesary information to build the request for the following pages
